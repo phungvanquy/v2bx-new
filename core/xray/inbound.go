@@ -16,6 +16,7 @@ import (
 	"github.com/xtls/xray-core/common/net"
 	"github.com/xtls/xray-core/core"
 	coreConf "github.com/xtls/xray-core/infra/conf"
+	"github.com/xtls/xray-core/proxy/shadowsocks"
 )
 
 // BuildInbound build Inbound config for different protocol
@@ -58,7 +59,7 @@ func buildInbound(option *conf.Options, nodeInfo *panel.NodeInfo, tag string) (*
 	// Set SniffingConfig
 	sniffingConfig := &coreConf.SniffingConfig{
 		Enabled:      true,
-		DestOverride: &coreConf.StringList{"http", "tls"},
+		DestOverride: coreConf.StringList{"http", "tls"},
 	}
 	if option.XrayOptions.DisableSniffing {
 		sniffingConfig.Enabled = false
@@ -209,12 +210,11 @@ func buildV2ray(config *conf.Options, nodeInfo *panel.NodeInfo, inbound *coreCon
 		}
 		inbound.Settings = (*json.RawMessage)(&s)
 	}
+	t := coreConf.TransportProtocol(v.Network)
+	inbound.StreamSetting = &coreConf.StreamConfig{Network: &t}
 	if len(v.NetworkSettings) == 0 {
 		return nil
 	}
-
-	t := coreConf.TransportProtocol(v.Network)
-	inbound.StreamSetting = &coreConf.StreamConfig{Network: &t}
 	switch v.Network {
 	case "tcp":
 		err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.TCPSettings)
@@ -296,8 +296,14 @@ func buildTrojan(config *conf.Options, nodeInfo *panel.NodeInfo, inbound *coreCo
 }
 
 func buildShadowsocks(config *conf.Options, nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {
+	if config.XrayOptions.DisableIVCheck {
+		return errors.New("DisableIVCheck is no longer supported by the Xray core")
+	}
 	inbound.Protocol = "shadowsocks"
 	s := nodeInfo.Shadowsocks
+	if s.ServerKey == "" && getCipherFromString(s.Cipher) == shadowsocks.CipherType_UNKNOWN {
+		return fmt.Errorf("unsupported Shadowsocks cipher: %s", s.Cipher)
+	}
 	settings := &coreConf.ShadowsocksServerConfig{
 		Cipher: s.Cipher,
 	}
@@ -319,10 +325,6 @@ func buildShadowsocks(config *conf.Options, nodeInfo *panel.NodeInfo, inbound *c
 	}
 	settings.Users = append(settings.Users, defaultSSuser)
 	settings.NetworkList = &coreConf.NetworkList{"tcp", "udp"}
-	settings.IVCheck = true
-	if config.XrayOptions.DisableIVCheck {
-		settings.IVCheck = false
-	}
 	t := coreConf.TransportProtocol("tcp")
 	inbound.StreamSetting = &coreConf.StreamConfig{Network: &t}
 	sets, err := json.Marshal(settings)

@@ -55,6 +55,10 @@ wget -N https://raw.githubusercontent.com/phungvanquy/v2bx-script-new/refs/heads
 
 ## Build
 
+Requires Go 1.26 or newer (the pinned toolchain is Go 1.26.8).
+See the [core update plan and compatibility notes](docs/core-updates.md) for the
+embedded core versions and fork requirements.
+
 ```bash
 # Select the cores to compile with -tags. Available cores: xray, sing, hysteria2.
 GOEXPERIMENT=jsonv2 go build -v -o build_assets/V2bX -tags "sing xray hysteria2 with_quic with_grpc with_utls with_wireguard with_acme with_gvisor" -trimpath -ldflags "-X 'github.com/InazumaV/V2bX/cmd.version=$version' -s -w -buildid="

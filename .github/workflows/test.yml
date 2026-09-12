@@ -1,0 +1,41 @@
+name: Test cores
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cores: [xray, sing, hysteria2, "sing xray hysteria2"]
+    env:
+      GOEXPERIMENT: jsonv2
+      CGO_ENABLED: "0"
+      TAGS: ${{ matrix.cores }} with_quic with_grpc with_utls with_wireguard with_acme with_gvisor
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify module graph
+        run: |
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
+          go mod verify
+      - name: Test core integrations
+        run: go test -tags "$TAGS" ./core/... -timeout 60s
+      - name: Compile all packages
+        run: go build -tags "$TAGS" ./...
+      - name: Run local tests
+        # Other existing test packages require live panel/ACME services or wait forever.
+        run: go test -tags "$TAGS" ./conf ./common/task ./cmd -run '^(TestConf_LoadFromPath|TestTask|Test_printFailed|Test_executeX25519)$' -timeout 60s
+      - name: Build
+        run: go build -tags "$TAGS" -trimpath -o build_assets/V2bX .

@@ -1,0 +1,9 @@
+.git
+.github
+.idea
+.vscode
+build_assets
+dist
+*.log
+*.out
+*.test
