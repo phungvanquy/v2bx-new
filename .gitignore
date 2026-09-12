@@ -1,0 +1,17 @@
+# Build outputs
+/V2bX
+/build_assets/
+/dist/
+*.exe
+*.test
+*.out
+
+# Local configuration and runtime data
+/config.json
+*.log
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+
