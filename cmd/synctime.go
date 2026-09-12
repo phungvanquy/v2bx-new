@@ -26,14 +26,14 @@ func synctimeHandle(_ *cobra.Command, _ []string) {
 	t, err := ntp.Time(ntpServer)
 	if err != nil {
 		fmt.Println(Err("get time from server error: ", err))
-		fmt.Println(Err("同步时间失败"))
+		fmt.Println(Err("Failed to synchronize system time"))
 		return
 	}
 	err = systime.SetSystemTime(t)
 	if err != nil {
 		fmt.Println(Err("set system time error: ", err))
-		fmt.Println(Err("同步时间失败"))
+		fmt.Println(Err("Failed to synchronize system time"))
 		return
 	}
-	fmt.Println(Ok("同步时间成功"))
+	fmt.Println(Ok("System time synchronized successfully"))
 }
