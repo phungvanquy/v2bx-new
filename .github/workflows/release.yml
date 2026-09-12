@@ -1,0 +1,105 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            asset_arch: "64"
+          - goos: linux
+            goarch: arm64
+            asset_arch: arm64-v8a
+          - goos: linux
+            goarch: s390x
+            asset_arch: s390x
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.x"
+          cache: true
+
+      - name: Build and package
+        shell: bash
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          set -euo pipefail
+
+          version="${GITHUB_REF_NAME}"
+          archive="V2bX-${GOOS}-${{ matrix.asset_arch }}.zip"
+          package_dir="dist/package"
+
+          mkdir -p "${package_dir}"
+          GOEXPERIMENT=jsonv2 go build \
+            -trimpath \
+            -tags "sing xray hysteria2 with_quic with_grpc with_utls with_wireguard with_acme with_gvisor" \
+            -ldflags "-X 'github.com/InazumaV/V2bX/cmd.version=${version}' -s -w -buildid=" \
+            -o "${package_dir}/V2bX" .
+
+          cp README.md LICENSE "${package_dir}/"
+          cp example/config.json example/custom_inbound.json example/custom_outbound.json \
+            example/dns.json example/geoip.dat example/geosite.dat example/route.json \
+            "${package_dir}/"
+
+          chmod +x "${package_dir}/V2bX"
+          (
+            cd "${package_dir}"
+            zip -9 "../${archive}" ./*
+          )
+
+          cd dist
+          {
+            printf 'MD5= %s\n' "$(md5sum "${archive}" | awk '{print $1}')"
+            printf 'SHA1= %s\n' "$(sha1sum "${archive}" | awk '{print $1}')"
+            printf 'SHA2-256= %s\n' "$(sha256sum "${archive}" | awk '{print $1}')"
+            printf 'SHA2-512= %s\n' "$(sha512sum "${archive}" | awk '{print $1}')"
+          } > "${archive}.dgst"
+
+      - name: Upload release files
+        uses: actions/upload-artifact@v4
+        with:
+          name: V2bX-${{ matrix.goos }}-${{ matrix.asset_arch }}
+          path: |
+            dist/*.zip
+            dist/*.dgst
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release files
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" dist/* \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "V2bX ${GITHUB_REF_NAME}" \
+            --generate-notes
