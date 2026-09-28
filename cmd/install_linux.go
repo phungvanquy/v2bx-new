@@ -21,7 +21,7 @@ var (
 				`installer=$(mktemp /tmp/v2bx-installer.XXXXXX) || exit 1
 trap 'rm -f "$installer"' EXIT
 curl -fsSL --retry 3 --retry-delay 2 --connect-timeout 15 \
-  --output "$installer" https://raw.githubusercontent.com/phungvanquy/v2bx-new/refs/heads/main/install.sh &&
+  --output "$installer" https://raw.githubusercontent.com/phungvanquy/v2bx-new/refs/heads/main/scripts/install.sh &&
   bash -n "$installer" && bash "$installer" "$1"`,
 				"v2bx-update",
 				targetVersion)

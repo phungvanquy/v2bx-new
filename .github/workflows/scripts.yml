@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check Bash syntax
-        run: bash -n install.sh V2bX.sh initconfig.sh
+        run: bash -n install.sh scripts/install.sh scripts/V2bX.sh scripts/initconfig.sh
 
       - name: Run ShellCheck
-        run: shellcheck --severity=error install.sh V2bX.sh initconfig.sh
+        run: shellcheck --severity=error install.sh scripts/install.sh scripts/V2bX.sh scripts/initconfig.sh

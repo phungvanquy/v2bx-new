@@ -46,13 +46,14 @@ Trojan, Shadowsocks, and Hysteria protocols.
 ### One-Click Installation
 
 ```bash
-wget -N https://raw.githubusercontent.com/phungvanquy/v2bx-new/refs/heads/main/install.sh && bash install.sh
+wget -N https://raw.githubusercontent.com/phungvanquy/v2bx-new/refs/heads/main/scripts/install.sh && bash install.sh
 ```
 
 The installer, management script, configuration wizard, and systemd service
-file are maintained here as `install.sh`, `V2bX.sh`, `initconfig.sh`, and
-`V2bX.service`. The installer downloads release archives from this repository
-and verifies their SHA-256 digest before installing them.
+file are maintained in [`scripts/`](scripts/). The original root-level
+`install.sh` URL remains available for existing one-click commands. The
+installer downloads release archives from this repository and verifies their
+SHA-256 digest before installing them.
 
 ### Manual Installation
 

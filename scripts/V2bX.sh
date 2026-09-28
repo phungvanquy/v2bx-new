@@ -100,7 +100,7 @@ install() {
     if ! curl --fail --location --silent --show-error \
         --retry 3 --retry-delay 2 --connect-timeout 15 \
         --output "${installer}" \
-        https://raw.githubusercontent.com/phungvanquy/v2bx-new/refs/heads/main/install.sh; then
+        https://raw.githubusercontent.com/phungvanquy/v2bx-new/refs/heads/main/scripts/install.sh; then
         rm -f "${installer}"
         echo -e "${red}Failed to download the V2bX installer.${plain}"
         return 1
@@ -128,7 +128,7 @@ update() {
     if ! curl --fail --location --silent --show-error \
         --retry 3 --retry-delay 2 --connect-timeout 15 \
         --output "${installer}" \
-        https://raw.githubusercontent.com/phungvanquy/v2bx-new/refs/heads/main/install.sh; then
+        https://raw.githubusercontent.com/phungvanquy/v2bx-new/refs/heads/main/scripts/install.sh; then
         rm -f "${installer}"
         echo -e "${red}Failed to download the V2bX installer.${plain}"
         return 1
@@ -293,7 +293,7 @@ update_shell() {
     if ! curl --fail --location --silent --show-error \
         --retry 3 --retry-delay 2 --connect-timeout 15 \
         --output "${updated_script}" \
-        https://raw.githubusercontent.com/phungvanquy/v2bx-new/refs/heads/main/V2bX.sh || \
+        https://raw.githubusercontent.com/phungvanquy/v2bx-new/refs/heads/main/scripts/V2bX.sh || \
         ! bash -n "${updated_script}"; then
         rm -f "${updated_script}"
         echo ""
