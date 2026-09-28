@@ -5,6 +5,41 @@ green='\033[0;32m'
 yellow='\033[0;33m'
 plain='\033[0m'
 
+elise_command() {
+    local helper=/usr/bin/V2bX-elise
+    local downloaded
+    if [[ ! -x "$helper" ]]; then
+        downloaded=$(mktemp /tmp/v2bx-elise-helper.XXXXXX) || return 1
+        if ! curl --fail --location --silent --show-error \
+            --retry 3 --retry-delay 2 --connect-timeout 15 \
+            --output "$downloaded" \
+            https://raw.githubusercontent.com/phungvanquy/v2bx-new/refs/heads/main/scripts/elise.sh ||
+            [[ ! -s "$downloaded" ]] ||
+            ! bash -n "$downloaded"; then
+            rm -f "$downloaded"
+            return 1
+        fi
+        install -m 0755 "$downloaded" "$helper"
+        rm -f "$downloaded"
+    fi
+    "$helper" "$@"
+}
+
+elise_menu() {
+    local choice kind node_id instance
+    echo 'Elise Rust core: 1) Install/update  2) Add node  3) List  4) Status  5) Logs  6) Remove node'
+    read -rp 'Choice: ' choice
+    case "$choice" in
+        1) elise_command install ;;
+        2) read -rp 'Protocol (vless/vmess): ' kind; read -rp 'Node ID: ' node_id; elise_command add "$kind" "$node_id" ;;
+        3) elise_command list ;;
+        4) read -rp 'Instance (vless-<id>/vmess-<id>): ' instance; elise_command status "$instance" ;;
+        5) read -rp 'Instance (vless-<id>/vmess-<id>): ' instance; elise_command log "$instance" ;;
+        6) read -rp 'Instance (vless-<id>/vmess-<id>): ' instance; elise_command remove "$instance" ;;
+        *) echo 'Invalid choice' ;;
+    esac
+}
+
 # check root
 [[ $EUID -ne 0 ]] && echo -e "${red}Error: ${plain} Must be run as root!\n" && exit 1
 
@@ -180,6 +215,10 @@ uninstall() {
             show_menu
         fi
         return 0
+    fi
+    if [[ -x /usr/bin/V2bX-elise ]]; then
+        /usr/bin/V2bX-elise uninstall || return 1
+        rm -f /usr/bin/V2bX-elise
     fi
     systemctl stop V2bX
     systemctl disable V2bX
@@ -885,6 +924,7 @@ show_usage() {
     echo "V2bX install      - Install V2bX"
     echo "V2bX uninstall    - Uninstall V2bX"
     echo "V2bX version      - Show V2bX version"
+    echo "V2bX elise ...    - Manage Elise Rust VLESS/VMess nodes"
     echo "------------------------------------------"
 }
 
@@ -912,10 +952,11 @@ ${green}V2bX installation and management script,${plain} ${red}not suitable for 
     ${green}13.${plain} Update V2bX maintenance script
     ${green}14.${plain} Generate V2bX configuration file
     ${green}15.${plain} Exit script
+    ${green}16.${plain} Elise Rust core
  "
     # Add future menu entries to the string above
     show_status
-    echo && read -rp "Please enter your choice [0-15]: " num
+    echo && read -rp "Please enter your choice [0-16]: " num
 
     case "${num}" in
         0) config ;;
@@ -934,7 +975,8 @@ ${green}V2bX installation and management script,${plain} ${red}not suitable for 
         13) update_shell ;;
         14) check_install && generate_config_file ;;
         15) exit ;;
-        *) echo -e "${red}Please enter a valid number [0-15]${plain}" ;;
+        16) elise_menu ;;
+        *) echo -e "${red}Please enter a valid number [0-16]${plain}" ;;
     esac
 }
 
@@ -956,6 +998,7 @@ if [[ $# -gt 0 ]]; then
         "x25519") check_install 0 && generate_x25519_key 0 ;;
         "version") check_install 0 && show_V2bX_version 0 ;;
         "update_shell") update_shell ;;
+        "elise") shift; elise_command "$@" ;;
         *) show_usage
     esac
 else

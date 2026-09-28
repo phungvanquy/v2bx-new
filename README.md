@@ -55,6 +55,23 @@ file are maintained in [`scripts/`](scripts/). The original root-level
 installer downloads release archives from this repository and verifies their
 SHA-256 digest before installing them.
 
+### Elise Rust core for VLESS and VMess
+
+The installer can install the [Elise Rust core](https://github.com/phungvanquy/Elise-Backend) as a separate systemd service. Remove a node from `Nodes` in `/etc/V2bX/config.json` before assigning it to Elise, so one process owns its listener and panel reports.
+
+```bash
+V2bX elise install
+V2bX elise add vless 123
+V2bX elise add vmess 456
+V2bX elise list
+V2bX elise status vless-123
+V2bX elise log vless-123
+```
+
+The installer verifies the Elise release SHA-256 checksum. It keeps the Rust binary in `/usr/local/libexec/V2bX` and per-node configuration in `/etc/v2bx-elise`. Linux amd64 and arm64 are supported. The node wizard checks the panel port and security mode and requests local certificate files for TLS. Configure your certificate renewal tool to run `V2bX elise restart <instance>` after renewal. REALITY keys must be configured in the panel. The Elise fork must have a published release before installation can download it.
+
+Elise uses the [PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0) license; check that its terms cover your intended use.
+
 ### Manual Installation
 
 [Manual installation guide](https://v2bx.v-50.me/v2bx/v2bx-xia-zai-he-an-zhuang/install/manual)
