@@ -1,0 +1,22 @@
+name: Test scripts
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Bash syntax and ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Check Bash syntax
+        run: bash -n install.sh V2bX.sh initconfig.sh
+
+      - name: Run ShellCheck
+        run: shellcheck --severity=error install.sh V2bX.sh initconfig.sh
