@@ -43,10 +43,11 @@ func init() {
 
 func uninstallHandle(_ *cobra.Command, _ []string) {
 	var yes string
-	fmt.Println(Warn("Are you sure you want to uninstall V2bX? (Y/n)"))
+	fmt.Println(Warn("Are you sure you want to uninstall V2bX? (y/N)"))
 	fmt.Scan(&yes)
 	if strings.ToLower(yes) != "y" {
 		fmt.Println("Uninstallation canceled")
+		return
 	}
 	_, err := exec.RunCommandByShell("systemctl stop V2bX&&systemctl disable V2bX")
 	if err != nil {

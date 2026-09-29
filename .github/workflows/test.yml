@@ -36,6 +36,6 @@ jobs:
         run: go build -tags "$TAGS" ./...
       - name: Run local tests
         # Other existing test packages require live panel/ACME services or wait forever.
-        run: go test -tags "$TAGS" ./conf ./common/task ./cmd -run '^(TestConf_LoadFromPath|TestTask|Test_printFailed|Test_executeX25519)$' -timeout 60s
+        run: go test -tags "$TAGS" ./conf ./common/task ./cmd -run '^(TestConf_LoadFromPath|TestTask|Test_printFailed|Test_executeX25519|TestUninstallCancellationDoesNotRunSystemctl)$' -timeout 60s
       - name: Build
         run: go build -tags "$TAGS" -trimpath -o build_assets/V2bX .
