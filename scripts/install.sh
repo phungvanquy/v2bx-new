@@ -6,7 +6,7 @@ yellow='\033[0;33m'
 plain='\033[0m'
 
 v2bx_repo="phungvanquy/v2bx-new"
-script_repo="phungvanquy/v2bx-new"
+script_ref="${V2BX_SCRIPT_REF:-refs/heads/main}"
 install_dir="/usr/local/V2bX"
 service_file="/etc/systemd/system/V2bX.service"
 management_file="/usr/bin/V2bX"
@@ -34,7 +34,7 @@ if [[ "${1:-}" == "elise" ]]; then
     [[ $EUID -eq 0 ]] || { echo "Run as root" >&2; exit 1; }
     helper=$(mktemp /tmp/v2bx-elise-helper.XXXXXX) || exit 1
     trap 'rm -f "$helper"' EXIT
-    download_file "https://raw.githubusercontent.com/${script_repo}/refs/heads/main/scripts/elise.sh" "$helper" || exit 1
+    download_file "https://raw.githubusercontent.com/${v2bx_repo}/${script_ref}/scripts/elise.sh" "$helper" || exit 1
     if [[ ! -s "$helper" ]] || ! bash -n "$helper"; then
         echo "Invalid Elise management script" >&2
         exit 1
@@ -245,13 +245,13 @@ install_V2bX() {
     chmod +x "${package_dir}/V2bX"
 
     if ! download_file \
-        "https://raw.githubusercontent.com/${script_repo}/refs/heads/main/scripts/V2bX.service" \
+        "https://raw.githubusercontent.com/${v2bx_repo}/${script_ref}/scripts/V2bX.service" \
         "${downloaded_service}" || \
         ! download_file \
-        "https://raw.githubusercontent.com/${script_repo}/refs/heads/main/scripts/V2bX.sh" \
+        "https://raw.githubusercontent.com/${v2bx_repo}/${script_ref}/scripts/V2bX.sh" \
         "${downloaded_script}" || \
         ! download_file \
-        "https://raw.githubusercontent.com/${script_repo}/refs/heads/main/scripts/elise.sh" \
+        "https://raw.githubusercontent.com/${v2bx_repo}/${script_ref}/scripts/elise.sh" \
         "${downloaded_elise}"; then
         echo -e "${red}Failed to download the service or management script; the installed version was not changed.${plain}"
         return 1
@@ -455,7 +455,7 @@ install_V2bX() {
     if [[ $first_install == true ]]; then
         read -rp "Detected that this is your first installation of V2bX, do you want to automatically generate the configuration file? (y/n): " if_generate
         if [[ $if_generate == [Yy] ]]; then
-            curl -o ./initconfig.sh -Ls https://raw.githubusercontent.com/phungvanquy/v2bx-new/refs/heads/main/scripts/initconfig.sh
+            curl -o ./initconfig.sh -Ls "https://raw.githubusercontent.com/${v2bx_repo}/${script_ref}/scripts/initconfig.sh"
             source initconfig.sh
             rm initconfig.sh -f
             generate_config_file

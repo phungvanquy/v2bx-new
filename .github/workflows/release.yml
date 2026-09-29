@@ -9,6 +9,26 @@ permissions:
   contents: write
 
 jobs:
+  elise-check:
+    name: Check Elise Rust core
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Check formatting
+        working-directory: rust/elise
+        run: cargo fmt --check
+      - name: Run Clippy
+        working-directory: rust/elise
+        run: cargo clippy --locked --all-targets --all-features
+      - name: Run Rust tests
+        working-directory: rust/elise
+        run: cargo test --locked --all
+      - name: Test installer contract
+        run: bash scripts/test-elise.sh
+
   build:
     name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
     runs-on: ubuntu-latest
@@ -84,9 +104,42 @@ jobs:
             dist/*.dgst
           if-no-files-found: error
 
+  elise:
+    needs: elise-check
+    name: Build Elise ${{ matrix.asset_arch }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-musl
+            asset_arch: amd64
+          - target: aarch64-unknown-linux-musl
+            asset_arch: arm64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Install cross
+        run: cargo install cross --locked --version 0.2.5
+      - name: Build Rust core
+        working-directory: rust/elise
+        run: cross build --locked --release --target ${{ matrix.target }}
+      - name: Package Rust core
+        run: bash scripts/package-elise.sh rust/elise/target/${{ matrix.target }}/release/elise ${{ matrix.asset_arch }} dist
+      - name: Upload release files
+        uses: actions/upload-artifact@v4
+        with:
+          name: elise-linux-${{ matrix.asset_arch }}
+          path: |
+            dist/elise-linux-${{ matrix.asset_arch }}.tar.gz
+            dist/elise-linux-${{ matrix.asset_arch }}.tar.gz.sha256
+          if-no-files-found: error
+
   release:
     name: Publish release
-    needs: build
+    needs: [build, elise]
     runs-on: ubuntu-latest
     steps:
       - name: Download release files

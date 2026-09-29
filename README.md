@@ -57,7 +57,7 @@ SHA-256 digest before installing them.
 
 ### Elise Rust core for VLESS and VMess
 
-The installer can install the [Elise Rust core](https://github.com/phungvanquy/Elise-Backend) as a separate systemd service. Remove a node from `Nodes` in `/etc/V2bX/config.json` before assigning it to Elise, so one process owns its listener and panel reports.
+The [Elise Rust source](rust/elise) lives in this repository. A V2bX release publishes the Go archives and the Elise Linux amd64/arm64 archives together. Elise runs as a separate systemd service for each panel node. Remove a node from `Nodes` in `/etc/V2bX/config.json` before assigning it to Elise, so one process owns its listener and panel reports.
 
 ```bash
 V2bX elise install
@@ -68,9 +68,9 @@ V2bX elise status vless-123
 V2bX elise log vless-123
 ```
 
-The installer verifies the Elise release SHA-256 checksum. It keeps the Rust binary in `/usr/local/libexec/V2bX` and per-node configuration in `/etc/v2bx-elise`. Linux amd64 and arm64 are supported. The node wizard checks the panel port and security mode and requests local certificate files for TLS. Configure your certificate renewal tool to run `V2bX elise restart <instance>` after renewal. REALITY keys must be configured in the panel. The Elise fork must have a published release before installation can download it.
+The installer downloads Elise from the same V2bX release and verifies its SHA-256 checksum. `V2bX elise install vX.Y.Z` selects a specific V2bX release; the V2bX release tag and Rust binary version are independent. It keeps the Rust binary in `/usr/local/libexec/V2bX` and per-node configuration in `/etc/v2bx-elise`. Linux amd64 and arm64 are supported. The node wizard checks the panel port and security mode and requests local certificate files for TLS. Configure your certificate renewal tool to run `V2bX elise restart <instance>` after renewal. REALITY keys must be configured in the panel. The selected V2bX release must contain Elise assets.
 
-Elise uses the [PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0) license; check that its terms cover your intended use.
+The Elise source retains its [PolyForm Noncommercial 1.0.0 license](rust/elise/LICENSE), separate from the V2bX Go source license.
 
 ### Manual Installation
 

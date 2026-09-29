@@ -16,10 +16,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check Bash syntax
-        run: bash -n install.sh scripts/install.sh scripts/V2bX.sh scripts/initconfig.sh scripts/elise.sh scripts/test-elise.sh
+        run: bash -n install.sh scripts/install.sh scripts/V2bX.sh scripts/initconfig.sh scripts/elise.sh scripts/package-elise.sh scripts/test-elise.sh
 
       - name: Run ShellCheck
-        run: shellcheck --severity=error install.sh scripts/install.sh scripts/V2bX.sh scripts/initconfig.sh scripts/elise.sh scripts/test-elise.sh
+        run: shellcheck --severity=error install.sh scripts/install.sh scripts/V2bX.sh scripts/initconfig.sh scripts/elise.sh scripts/package-elise.sh scripts/test-elise.sh
 
       - name: Test Elise installer contract
         run: bash scripts/test-elise.sh
