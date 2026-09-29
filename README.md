@@ -68,7 +68,7 @@ V2bX elise status vless-123
 V2bX elise log vless-123
 ```
 
-The installer downloads Elise from the same V2bX release and verifies its SHA-256 checksum. `V2bX elise install vX.Y.Z` selects a specific V2bX release; the V2bX release tag and Rust binary version are independent. It keeps the Rust binary in `/usr/local/libexec/V2bX` and per-node configuration in `/etc/v2bx-elise`. Linux amd64 and arm64 are supported. The node wizard checks the panel port and security mode and requests local certificate files for TLS. Configure your certificate renewal tool to run `V2bX elise restart <instance>` after renewal. REALITY keys must be configured in the panel. The selected V2bX release must contain Elise assets.
+The installer downloads Elise from the same V2bX release and verifies its SHA-256 checksum. `V2bX elise install vX.Y.Z` selects a specific V2bX release; the V2bX release tag and Rust binary version are independent. It keeps the Rust binary in `/usr/local/libexec/V2bX` and per-node configuration in `/etc/v2bx-elise`. Linux amd64 and arm64 are supported. If Python 3 is missing, the Elise helper installs it with apt-get, dnf, or yum. The node wizard checks the panel port and security mode and requests local certificate files for TLS. Configure your certificate renewal tool to run `V2bX elise restart <instance>` after renewal. REALITY keys must be configured in the panel. The selected V2bX release must contain Elise assets.
 
 The Elise source retains its [PolyForm Noncommercial 1.0.0 license](rust/elise/LICENSE), separate from the V2bX Go source license.
 
