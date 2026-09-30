@@ -71,7 +71,19 @@ v2bx elise status vless-123
 v2bx elise log vless-123
 ```
 
-The installer downloads Elise from the same V2bX release and verifies its SHA-256 checksum. `v2bx elise install vX.Y.Z` selects a specific V2bX release; the V2bX release tag and Rust binary version are independent. It keeps the Rust binary in `/usr/local/libexec/V2bX` and per-node configuration in `/etc/v2bx-elise`. Linux amd64 and arm64 are supported. If Python 3 is missing, the Elise helper installs it with apt-get, dnf, or yum. The node wizard checks the panel port and security mode and requests local certificate files for TLS. Configure your certificate renewal tool to run `v2bx elise restart <instance>` after renewal. REALITY keys must be configured in the panel. The selected V2bX release must contain Elise assets.
+The installer downloads Elise from the same V2bX release and verifies its SHA-256 checksum. `v2bx elise install vX.Y.Z` selects a specific V2bX release; the V2bX release tag and Rust binary version are independent. It keeps the Rust binary in `/usr/local/libexec/V2bX` and per-node configuration in `/etc/v2bx-elise`. Linux amd64 and arm64 are supported. If Python 3 is missing, the Elise helper installs it with apt-get, dnf, or yum. The node wizard checks the panel port and security mode. REALITY keys must be configured in the panel. The selected V2bX release must contain Elise assets.
+
+For TLS nodes (including AnyTLS and Hysteria 1/2), the wizard offers three certificate modes:
+
+| Mode | Required input | Renewal |
+| --- | --- | --- |
+| Existing files (default) | Absolute paths to a PEM full chain and matching, unencrypted private key | Your certificate tool renews them; configure its deploy hook to run `v2bx elise restart <instance>` |
+| Automatic Let's Encrypt (HTTP-01) | DNS hostname and account email | Elise checks every 12 hours, renews within 30 days of expiry, and reloads the listener |
+| Self-signed | TLS hostname | Generates a persistent certificate valid for 365 days; trust it explicitly in the client and replace it before expiry |
+
+Automatic mode requires the domain's A/AAAA records to point to this server and public inbound **TCP port 80** to remain available for issuance and renewal. The wizard checks local availability and DNS resolution; it cannot verify external firewall or NAT rules. Use a different TCP port for the proxy listener. HTTP-01 cannot issue wildcard certificates. See [Let's Encrypt HTTP-01 requirements](https://letsencrypt.org/docs/challenge-types/#http-01-challenge). DNS-01 issuance is not built into this wizard; certificates obtained with an external DNS client work with existing-file mode.
+
+Automatic and self-signed files are stored in `/etc/v2bx-elise/<instance>/cert/`. Automatic issuance gets up to five minutes during startup. Failed startup preserves configuration and certificates and prints a recovery command. Automatic renewal reloads the listener and may interrupt active sessions; a renewal failure keeps a still-valid certificate for the next retry. Self-signed mode installs OpenSSL if necessary and prints the certificate's SHA-256 fingerprint. The Rust renewal changes require an Elise binary built from this revision; updating only the shell script does not update an older release binary.
 
 AnyTLS and both Hysteria versions require a TLS certificate and private key. Hysteria listeners use UDP; the installer checks UDP port availability and startup. `hysteria1`/`hy1` are aliases for `hysteria`, and `hy2` is an alias for `hysteria2`. Instances use the canonical panel type, for example `hysteria-101` or `hysteria2-102`. A panel using `node_type=hysteria` with `version=2` selects the Hysteria 2 inbound automatically.
 
