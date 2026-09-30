@@ -449,7 +449,7 @@ install_V2bX() {
     echo "V2bX install      - Install V2bX"
     echo "V2bX uninstall    - Uninstall V2bX"
     echo "V2bX version      - View V2bX version"
-    echo "V2bX elise ...    - Install/manage Elise Rust VLESS and VMess nodes"
+    echo "V2bX elise ...    - Install/manage Elise Rust VLESS/VMess/AnyTLS/Hysteria 1/2 nodes"
     echo "------------------------------------------"
     # First installation prompt to generate configuration file
     if [[ $first_install == true ]]; then

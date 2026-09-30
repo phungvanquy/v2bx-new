@@ -15,7 +15,7 @@ add_node_config() {
     echo -e "${green}1. xray${plain}"
     echo -e "${green}2. singbox${plain}"
     echo -e "${green}3. hysteria2${plain}"
-    echo -e "${green}4. Elise Rust (VLESS/VMess, separate service)${plain}"
+    echo -e "${green}4. Elise Rust (VLESS/VMess/AnyTLS/Hysteria 1/2, separate service)${plain}"
     read -rp "Enter:" core_type
     if [ "$core_type" == "1" ]; then
         core="xray"
@@ -43,9 +43,10 @@ add_node_config() {
     done
 
     if [ "$core_type" == "4" ]; then
-        read -rp "Elise protocol (vless/vmess): " NodeType
-        if [[ "$NodeType" != "vless" && "$NodeType" != "vmess" ]]; then
-            echo "Elise currently accepts vless or vmess in this wizard."
+        read -rp "Elise protocol (vless/vmess/anytls/hysteria/hysteria2): " NodeType
+        NodeType=${NodeType,,}
+        if [[ ! "$NodeType" =~ ^(vless|vmess|anytls|hysteria|hysteria1|hysteria2|hy1|hy2)$ ]]; then
+            echo "Elise accepts vless, vmess, anytls, hysteria (hysteria1/hy1), or hysteria2 (hy2)."
             return 1
         fi
         if [ "$elise_installed" = false ]; then

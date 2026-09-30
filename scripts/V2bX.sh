@@ -31,11 +31,11 @@ elise_menu() {
     read -rp 'Choice: ' choice
     case "$choice" in
         1) elise_command install ;;
-        2) read -rp 'Protocol (vless/vmess): ' kind; read -rp 'Node ID: ' node_id; elise_command add "$kind" "$node_id" ;;
+        2) read -rp 'Protocol (vless/vmess/anytls/hysteria/hysteria2): ' kind; read -rp 'Node ID: ' node_id; elise_command add "$kind" "$node_id" ;;
         3) elise_command list ;;
-        4) read -rp 'Instance (vless-<id>/vmess-<id>): ' instance; elise_command status "$instance" ;;
-        5) read -rp 'Instance (vless-<id>/vmess-<id>): ' instance; elise_command log "$instance" ;;
-        6) read -rp 'Instance (vless-<id>/vmess-<id>): ' instance; elise_command remove "$instance" ;;
+        4) read -rp 'Instance (<protocol>-<id>, e.g. anytls-123): ' instance; elise_command status "$instance" ;;
+        5) read -rp 'Instance (<protocol>-<id>, e.g. hysteria2-123): ' instance; elise_command log "$instance" ;;
+        6) read -rp 'Instance (<protocol>-<id>): ' instance; elise_command remove "$instance" ;;
         *) echo 'Invalid choice' ;;
     esac
 }
@@ -924,7 +924,7 @@ show_usage() {
     echo "V2bX install      - Install V2bX"
     echo "V2bX uninstall    - Uninstall V2bX"
     echo "V2bX version      - Show V2bX version"
-    echo "V2bX elise ...    - Manage Elise Rust VLESS/VMess nodes"
+    echo "V2bX elise ...    - Manage Elise Rust VLESS/VMess/AnyTLS/Hysteria 1/2 nodes"
     echo "------------------------------------------"
 }
 

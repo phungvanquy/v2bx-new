@@ -55,7 +55,7 @@ file are maintained in [`scripts/`](scripts/). The original root-level
 installer downloads release archives from this repository and verifies their
 SHA-256 digest before installing them.
 
-### Elise Rust core for VLESS and VMess
+### Elise Rust core for VLESS, VMess, AnyTLS, and Hysteria 1/2
 
 The [Elise Rust source](rust/elise) lives in this repository. A V2bX release publishes the Go archives and the Elise Linux amd64/arm64 archives together. Elise runs as a separate systemd service for each panel node. Remove a node from `Nodes` in `/etc/V2bX/config.json` before assigning it to Elise, so one process owns its listener and panel reports.
 
@@ -63,12 +63,17 @@ The [Elise Rust source](rust/elise) lives in this repository. A V2bX release pub
 v2bx elise install
 v2bx elise add vless 123
 v2bx elise add vmess 456
+v2bx elise add anytls 789
+v2bx elise add hysteria 101
+v2bx elise add hysteria2 102
 v2bx elise list
 v2bx elise status vless-123
 v2bx elise log vless-123
 ```
 
 The installer downloads Elise from the same V2bX release and verifies its SHA-256 checksum. `v2bx elise install vX.Y.Z` selects a specific V2bX release; the V2bX release tag and Rust binary version are independent. It keeps the Rust binary in `/usr/local/libexec/V2bX` and per-node configuration in `/etc/v2bx-elise`. Linux amd64 and arm64 are supported. If Python 3 is missing, the Elise helper installs it with apt-get, dnf, or yum. The node wizard checks the panel port and security mode and requests local certificate files for TLS. Configure your certificate renewal tool to run `v2bx elise restart <instance>` after renewal. REALITY keys must be configured in the panel. The selected V2bX release must contain Elise assets.
+
+AnyTLS and both Hysteria versions require a TLS certificate and private key. Hysteria listeners use UDP; the installer checks UDP port availability and startup. `hysteria1`/`hy1` are aliases for `hysteria`, and `hy2` is an alias for `hysteria2`. Instances use the canonical panel type, for example `hysteria-101` or `hysteria2-102`. A panel using `node_type=hysteria` with `version=2` selects the Hysteria 2 inbound automatically.
 
 The Elise source retains its [PolyForm Noncommercial 1.0.0 license](rust/elise/LICENSE), separate from the V2bX Go source license.
 
