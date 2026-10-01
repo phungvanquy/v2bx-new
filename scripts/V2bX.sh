@@ -26,12 +26,12 @@ elise_command() {
 }
 
 elise_menu() {
-    local choice kind node_id instance
+    local choice kind node_id instance panel
     echo 'Elise Rust core: 1) Install/update  2) Add node  3) List  4) Status  5) Logs  6) Remove node'
     read -rp 'Choice: ' choice
     case "$choice" in
         1) elise_command install ;;
-        2) read -rp 'Protocol (vless/vmess/anytls/hysteria/hysteria2): ' kind; read -rp 'Node ID: ' node_id; elise_command add "$kind" "$node_id" ;;
+        2) read -rp 'Panel (xboard/v2board/xiaov2board/ppanel/sspanel) [xboard]: ' panel; read -rp 'Protocol (vless/vmess/anytls/hysteria/hysteria2): ' kind; read -rp 'Node ID: ' node_id; elise_command add "$kind" "$node_id" "${panel:-xboard}" ;;
         3) elise_command list ;;
         4) read -rp 'Instance (<protocol>-<id>, e.g. anytls-123): ' instance; elise_command status "$instance" ;;
         5) read -rp 'Instance (<protocol>-<id>, e.g. hysteria2-123): ' instance; elise_command log "$instance" ;;

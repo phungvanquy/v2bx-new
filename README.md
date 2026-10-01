@@ -71,6 +71,25 @@ v2bx elise status vless-123
 v2bx elise log vless-123
 ```
 
+The optional final argument selects the panel platform: `xboard` (default), `v2board`, `xiaov2board` (alias `xiaov2b`), `ppanel`, or `sspanel` (alias `sspanel-uim`). For example:
+
+```bash
+v2bx elise add anytls 70 xboard
+v2bx elise add vless 123 v2board
+v2bx elise add hysteria2 102 xiaov2board
+v2bx elise add vless 456 ppanel
+v2bx elise add vmess 789 sspanel
+```
+
+Panels other than XBoard require an Elise binary from V2bX v0.6.4 or newer. To update both an older management helper and the core, run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/phungvanquy/v2bx-new/refs/heads/main/install.sh -o /tmp/v2bx-install.sh
+bash /tmp/v2bx-install.sh elise install v0.6.4
+```
+
+Each platform uses its existing Elise API client; the panel must expose the requested protocol. V2Board uses the `v2node` API, XiaoV2Board tries its v2 API and then UniProxy, PPanel selects an enabled matching protocol, and SSPanel uses the `mod_mu` API. Other API variants are not automatically compatible. Existing XBoard commands and instance names continue to work.
+
 The installer downloads Elise from the same V2bX release and verifies its SHA-256 checksum. `v2bx elise install vX.Y.Z` selects a specific V2bX release; the V2bX release tag and Rust binary version are independent. It keeps the Rust binary in `/usr/local/libexec/V2bX` and per-node configuration in `/etc/v2bx-elise`. Linux amd64 and arm64 are supported. If Python 3 is missing, the Elise helper installs it with apt-get, dnf, or yum. The node wizard checks the panel port and security mode. REALITY keys must be configured in the panel. The selected V2bX release must contain Elise assets.
 
 For TLS nodes (including AnyTLS and Hysteria 1/2), the wizard offers three certificate modes:
