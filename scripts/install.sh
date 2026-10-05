@@ -10,7 +10,6 @@ script_ref="${V2BX_SCRIPT_REF:-refs/heads/main}"
 install_dir="/usr/local/V2bX"
 service_file="/etc/systemd/system/V2bX.service"
 management_file="/usr/bin/V2bX"
-elise_management_file="/usr/bin/V2bX-elise"
 install_temp_dir=""
 
 cleanup_install_temp() {
@@ -28,21 +27,11 @@ download_file() {
         --output "${destination}" "${url}"
 }
 
-# Keep the Rust core install path separate from the Go release transaction.
+# Keep old one-click commands informative without installing either project.
 if [[ "${1:-}" == "elise" ]]; then
-    shift
-    [[ $EUID -eq 0 ]] || { echo "Run as root" >&2; exit 1; }
-    helper=$(mktemp /tmp/v2bx-elise-helper.XXXXXX) || exit 1
-    trap 'rm -f "$helper"' EXIT
-    download_file "https://raw.githubusercontent.com/${v2bx_repo}/${script_ref}/scripts/elise.sh" "$helper" || exit 1
-    if [[ ! -s "$helper" ]] || ! bash -n "$helper"; then
-        echo "Invalid Elise management script" >&2
-        exit 1
-    fi
-    install -m 0755 "$helper" "$elise_management_file" || exit 1
-    if [[ $# -eq 0 ]]; then set -- install; fi
-    rm -f "$helper"
-    exec "$elise_management_file" "$@"
+    echo 'Elise has moved to https://github.com/phungvanquy/elise' >&2
+    echo 'Install standalone Elise, then run: sudo elisectl migrate --from-v2bx --dry-run' >&2
+    exit 1
 fi
 
 show_v050_compatibility_notice() {
@@ -168,11 +157,9 @@ install_V2bX() {
     local package_dir
     local downloaded_service
     local downloaded_script
-    local downloaded_elise
     local backup_dir="${install_dir}.rollback.$$"
     local service_backup
     local management_backup
-    local elise_backup
     local geoip_backup
     local geosite_backup
     local had_install=false
@@ -209,10 +196,8 @@ install_V2bX() {
     package_dir="${install_temp_dir}/package"
     downloaded_service="${install_temp_dir}/V2bX.service"
     downloaded_script="${install_temp_dir}/V2bX.sh"
-    downloaded_elise="${install_temp_dir}/elise.sh"
     service_backup="${install_temp_dir}/V2bX.service.previous"
     management_backup="${install_temp_dir}/V2bX.sh.previous"
-    elise_backup="${install_temp_dir}/elise.sh.previous"
     geoip_backup="${install_temp_dir}/geoip.dat.previous"
     geosite_backup="${install_temp_dir}/geosite.dat.previous"
     archive_url="https://github.com/${v2bx_repo}/releases/download/${last_version}/V2bX-linux-${arch}.zip"
@@ -249,14 +234,11 @@ install_V2bX() {
         "${downloaded_service}" || \
         ! download_file \
         "https://raw.githubusercontent.com/${v2bx_repo}/${script_ref}/scripts/V2bX.sh" \
-        "${downloaded_script}" || \
-        ! download_file \
-        "https://raw.githubusercontent.com/${v2bx_repo}/${script_ref}/scripts/elise.sh" \
-        "${downloaded_elise}"; then
+        "${downloaded_script}"; then
         echo -e "${red}Failed to download the service or management script; the installed version was not changed.${plain}"
         return 1
     fi
-    if [[ ! -s "${downloaded_elise}" ]] || ! bash -n "${downloaded_script}" || ! bash -n "${downloaded_elise}" || \
+    if [[ ! -s "${downloaded_script}" ]] || ! bash -n "${downloaded_script}" || \
         ! grep -q '^ExecStart=/usr/local/V2bX/V2bX server$' "${downloaded_service}"; then
         echo -e "${red}The downloaded management script or service file is invalid; the installed version was not changed.${plain}"
         return 1
@@ -287,12 +269,6 @@ install_V2bX() {
             return 1
         fi
     fi
-    if [[ -f "${elise_management_file}" ]]; then
-        if ! cp -p "${elise_management_file}" "${elise_backup}"; then
-            echo -e "${red}Failed to back up the Elise management script; the installed version was not changed.${plain}"
-            return 1
-        fi
-    fi
     if [[ -f /etc/V2bX/geoip.dat ]]; then
         had_geoip=true
         cp -p /etc/V2bX/geoip.dat "${geoip_backup}" || return 1
@@ -317,11 +293,6 @@ install_V2bX() {
             cp -p "${management_backup}" "${management_file}"
         else
             rm -f "${management_file}"
-        fi
-        if [[ -f "${elise_backup}" ]]; then
-            cp -p "${elise_backup}" "${elise_management_file}"
-        else
-            rm -f "${elise_management_file}"
         fi
         if [[ "${had_geoip}" == true ]]; then
             cp -p "${geoip_backup}" /etc/V2bX/geoip.dat 2>/dev/null || true
@@ -366,7 +337,6 @@ install_V2bX() {
     if ! mkdir -p /etc/V2bX/ || \
         ! install -m 0644 "${downloaded_service}" "${service_file}" || \
         ! install -m 0755 "${downloaded_script}" "${management_file}" || \
-        ! install -m 0755 "${downloaded_elise}" "${elise_management_file}" || \
         ! systemctl daemon-reload || \
         ! systemctl enable V2bX || \
         ! cp "${install_dir}/geoip.dat" /etc/V2bX/ || \
@@ -449,7 +419,6 @@ install_V2bX() {
     echo "V2bX install      - Install V2bX"
     echo "V2bX uninstall    - Uninstall V2bX"
     echo "V2bX version      - View V2bX version"
-    echo "V2bX elise ...    - Install/manage Elise Rust VLESS/VMess/AnyTLS/Hysteria 1/2 nodes"
     echo "------------------------------------------"
     # First installation prompt to generate configuration file
     if [[ $first_install == true ]]; then

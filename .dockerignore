@@ -4,7 +4,6 @@
 .vscode
 build_assets
 dist
-rust/elise/target
 *.log
 *.out
 *.test

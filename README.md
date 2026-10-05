@@ -55,58 +55,15 @@ file are maintained in [`scripts/`](scripts/). The original root-level
 installer downloads release archives from this repository and verifies their
 SHA-256 digest before installing them.
 
-### Elise Rust core for VLESS, VMess, AnyTLS, and Hysteria 1/2
+### Elise
 
-The [Elise Rust source](rust/elise) lives in this repository. A V2bX release publishes the Go archives and the Elise Linux amd64/arm64 archives together. Elise runs as a separate systemd service for each panel node. Remove a node from `Nodes` in `/etc/V2bX/config.json` before assigning it to Elise, so one process owns its listener and panel reports.
+Elise is maintained independently at [phungvanquy/elise](https://github.com/phungvanquy/elise),
+with its own releases, installer, and `elisectl` management command.
 
-```bash
-v2bx elise install
-v2bx elise add vless 123
-v2bx elise add vmess 456
-v2bx elise add anytls 789
-v2bx elise add hysteria 101
-v2bx elise add hysteria2 102
-v2bx elise list
-v2bx elise status vless-123
-v2bx elise log vless-123
-```
-
-The optional final argument selects the panel platform: `xboard` (default), `v2board`, `xiaov2board` (alias `xiaov2b`), `ppanel`, or `sspanel` (alias `sspanel-uim`). For example:
-
-```bash
-v2bx elise add anytls 70 xboard
-v2bx elise add vless 123 v2board
-v2bx elise add hysteria2 102 xiaov2board
-v2bx elise add vless 456 ppanel
-v2bx elise add vmess 789 sspanel
-```
-
-Panels other than XBoard require an Elise binary from V2bX v0.6.4 or newer. To update both an older management helper and the core, run:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/phungvanquy/v2bx-new/refs/heads/main/install.sh -o /tmp/v2bx-install.sh
-bash /tmp/v2bx-install.sh elise install v0.6.4
-```
-
-Each platform uses its existing Elise API client; the panel must expose the requested protocol. V2Board uses the `v2node` API, XiaoV2Board tries its v2 API and then UniProxy, PPanel selects an enabled matching protocol, and SSPanel uses the `mod_mu` API. Other API variants are not automatically compatible. Existing XBoard commands and instance names continue to work.
-
-The installer downloads Elise from the same V2bX release and verifies its SHA-256 checksum. `v2bx elise install vX.Y.Z` selects a specific V2bX release; the V2bX release tag and Rust binary version are independent. It keeps the Rust binary in `/usr/local/libexec/V2bX` and per-node configuration in `/etc/v2bx-elise`. Linux amd64 and arm64 are supported. If Python 3 is missing, the Elise helper installs it with apt-get, dnf, or yum. The node wizard checks the panel port and security mode. REALITY keys must be configured in the panel. The selected V2bX release must contain Elise assets.
-
-For TLS nodes (including AnyTLS and Hysteria 1/2), the wizard offers three certificate modes:
-
-| Mode | Required input | Renewal |
-| --- | --- | --- |
-| Existing files (default) | Absolute paths to a PEM full chain and matching, unencrypted private key | Your certificate tool renews them; configure its deploy hook to run `v2bx elise restart <instance>` |
-| Automatic Let's Encrypt (HTTP-01) | DNS hostname and account email | Elise checks every 12 hours, renews within 30 days of expiry, and reloads the listener |
-| Self-signed | TLS hostname | Generates a persistent certificate valid for 365 days; trust it explicitly in the client and replace it before expiry |
-
-Automatic mode requires the domain's A/AAAA records to point to this server and public inbound **TCP port 80** to remain available for issuance and renewal. The wizard checks local availability and DNS resolution; it cannot verify external firewall or NAT rules. Use a different TCP port for the proxy listener. HTTP-01 cannot issue wildcard certificates. See [Let's Encrypt HTTP-01 requirements](https://letsencrypt.org/docs/challenge-types/#http-01-challenge). DNS-01 issuance is not built into this wizard; certificates obtained with an external DNS client work with existing-file mode.
-
-Automatic and self-signed files are stored in `/etc/v2bx-elise/<instance>/cert/`. Automatic issuance gets up to five minutes during startup. Failed startup preserves configuration and certificates and prints a recovery command. Automatic renewal reloads the listener and may interrupt active sessions; a renewal failure keeps a still-valid certificate for the next retry. Self-signed mode installs OpenSSL if necessary and prints the certificate's SHA-256 fingerprint. The Rust renewal changes require an Elise binary built from this revision; updating only the shell script does not update an older release binary.
-
-AnyTLS and both Hysteria versions require a TLS certificate and private key. Hysteria listeners use UDP; the installer checks UDP port availability and startup. `hysteria1`/`hy1` are aliases for `hysteria`, and `hy2` is an alias for `hysteria2`. Instances use the canonical panel type, for example `hysteria-101` or `hysteria2-102`. A panel using `node_type=hysteria` with `version=2` selects the Hysteria 2 inbound automatically.
-
-The Elise source retains its [PolyForm Noncommercial 1.0.0 license](rust/elise/LICENSE), separate from the V2bX Go source license.
+Existing `v2bx elise` installations should follow the
+[migration guide](docs/elise-migration.md). V2bX installation, updates, and
+uninstallation manage only the Go service. Historical V2bX releases through
+v0.6.8 retain their bundled Elise archives.
 
 ### Manual Installation
 

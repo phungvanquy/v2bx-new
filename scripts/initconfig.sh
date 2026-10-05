@@ -15,7 +15,6 @@ add_node_config() {
     echo -e "${green}1. xray${plain}"
     echo -e "${green}2. singbox${plain}"
     echo -e "${green}3. hysteria2${plain}"
-    echo -e "${green}4. Elise Rust (VLESS/VMess/AnyTLS/Hysteria 1/2, separate service)${plain}"
     read -rp "Enter:" core_type
     if [ "$core_type" == "1" ]; then
         core="xray"
@@ -26,10 +25,8 @@ add_node_config() {
     elif [ "$core_type" == "3" ]; then
         core="hysteria2"
         core_hysteria2=true
-    elif [ "$core_type" == "4" ]; then
-        core="elise"
     else
-        echo "Invalid choice. Please select 1 2 3 4."
+        echo "Invalid choice. Please select 1 2 3."
         return 1
     fi
     while true; do
@@ -41,21 +38,6 @@ add_node_config() {
             echo "Error: Please enter a valid number as Node ID."
         fi
     done
-
-    if [ "$core_type" == "4" ]; then
-        read -rp "Elise protocol (vless/vmess/anytls/hysteria/hysteria2): " NodeType
-        NodeType=${NodeType,,}
-        if [[ ! "$NodeType" =~ ^(vless|vmess|anytls|hysteria|hysteria1|hysteria2|hy1|hy2)$ ]]; then
-            echo "Elise accepts vless, vmess, anytls, hysteria (hysteria1/hy1), or hysteria2 (hy2)."
-            return 1
-        fi
-        if [ "$elise_installed" = false ]; then
-            V2bX elise install || return 1
-            elise_installed=true
-        fi
-        V2bX elise add "$NodeType" "$NodeID" || return 1
-        return 0
-    fi
 
     if [ "$core_hysteria2" = true ] && [ "$core_xray" = false ] && [ "$core_sing" = false ]; then
         NodeType="hysteria2"
@@ -224,7 +206,6 @@ generate_config_file() {
     core_xray=false
     core_sing=false
     core_hysteria2=false
-    elise_installed=false
     fixed_api_info=false
     check_api=false
 
@@ -252,9 +233,8 @@ generate_config_file() {
     done
 
     if [[ ${#nodes_config[@]} -eq 0 ]]; then
-        echo -e "${green}Elise nodes are configured. No Go-managed nodes were selected.${plain}"
-        systemctl disable --now V2bX 2>/dev/null || true
-        return 0
+        echo 'No nodes were selected; configuration was not changed.'
+        return 1
     fi
 
     # Initialize core configuration array

@@ -2,7 +2,6 @@
 /V2bX
 /build_assets/
 /dist/
-/rust/elise/target/
 *.exe
 *.test
 *.out
